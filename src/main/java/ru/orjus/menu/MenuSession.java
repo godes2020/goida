@@ -1,5 +1,9 @@
 package ru.orjus.menu;
 
+import ru.orjus.menu.buttonAction.ButtonAction;
+import ru.orjus.menu.buttonAction.ChangeSettingAction;
+import ru.orjus.menu.buttonAction.CommandAction;
+import ru.orjus.menu.buttonAction.OpenMenuAction;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
@@ -207,7 +211,7 @@ public final class MenuSession {
         currentHover = null;
     }
 
-    private void loadScreen(String name) {
+    public void loadScreen(String name) {
         clearScreenElements();
         currentScreen = name;
         if (name.equals("main")) {
@@ -288,7 +292,8 @@ public final class MenuSession {
         float fovRowY = -0.50f;
 
         MenuButton dec = new MenuButton("fov_dec", "◄", -arrowDx, fovRowY,
-                0.22f, 0.18f, 1.8f, orange, white, "change:fov:-1:70:110");
+                0.22f, 0.18f, 1.8f, orange, white,
+                new ChangeSettingAction("fov", -1, 30, 110));
         dec.spawn(computeCursorLoc(-arrowDx, fovRowY));
         buttons.add(dec);
 
@@ -311,7 +316,8 @@ public final class MenuSession {
                 tt.getRightRotation()));
 
         MenuButton inc = new MenuButton("fov_inc", "►", arrowDx, fovRowY,
-                0.22f, 0.18f, 1.8f, orange, white, "change:fov:1:70:110");
+                0.22f, 0.18f, 1.8f, orange, white,
+                new ChangeSettingAction("fov", 1, 30, 110));
         inc.spawn(computeCursorLoc(arrowDx, fovRowY));
         buttons.add(inc);
 
@@ -319,7 +325,7 @@ public final class MenuSession {
                 1.10f, 0.18f, 1.5f,
                 TextColor.fromHexString("#1A1A1A"),
                 TextColor.fromHexString("#FFFFFF"),
-                "open:main");
+                new OpenMenuAction("main"));
         cont.spawn(computeCursorLoc(0f, -1.15f));
         cont.setBackgroundColor(orangeBg);
         buttons.add(cont);
@@ -336,12 +342,14 @@ public final class MenuSession {
 
         int fov = playerSettings.getOrDefault("fov", 90);
         float[] xy = computeBracketPos(fov);
+        float ix = xy[0] * BRACKET_INSET;
+        float iy = xy[1] * BRACKET_INSET;
         String[] chars = { "┏", "┓", "┗", "┛" };
         float[][] positions = {
-                { -xy[0], xy[1] },
-                { xy[0], xy[1] },
-                { -xy[0], -xy[1] },
-                { xy[0], -xy[1] }
+                { -ix, iy },
+                { ix, iy },
+                { -ix, -iy },
+                { ix, -iy }
         };
 
         TextColor orange = TextColor.fromHexString("#FFAA00");
@@ -360,7 +368,7 @@ public final class MenuSession {
             td.setTransformation(new Transformation(
                     new Vector3f(0f, 0f, 0f),
                     t.getLeftRotation(),
-                    new Vector3f(3.0f, 3.0f, 1f),
+                    new Vector3f(1.5f, 1.5f, 1f),
                     t.getRightRotation()));
             fovBrackets.add(td);
             decorations.add(td);
@@ -372,11 +380,13 @@ public final class MenuSession {
             return;
         int fov = playerSettings.getOrDefault("fov", 90);
         float[] xy = computeBracketPos(fov);
+        float ix = xy[0] * BRACKET_INSET;
+        float iy = xy[1] * BRACKET_INSET;
         float[][] positions = {
-                { -xy[0], xy[1] },
-                { xy[0], xy[1] },
-                { -xy[0], -xy[1] },
-                { xy[0], -xy[1] }
+                { -ix, iy },
+                { ix, iy },
+                { -ix, -iy },
+                { ix, -iy }
         };
         for (int i = 0; i < 4; i++) {
             TextDisplay td = fovBrackets.get(i);
@@ -402,7 +412,8 @@ public final class MenuSession {
         return (float) (userHalfTan / baseHalfTan);
     }
 
-    private static final float CURSOR_INSET = 0.95f;
+    private static final float CURSOR_INSET = 0.85f;
+    private static final float BRACKET_INSET = 1.0f;
 
     private void applyFovScale() {
         int fov = playerSettings.getOrDefault("fov", BASE_FOV);
@@ -602,19 +613,19 @@ public final class MenuSession {
             disp.setPersistent(false);
             disp.setInvulnerable(true);
             disp.setItemStack(inActiveItem);
-            disp.setViewRange(2f);
-            // disp.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GUI);
+            disp.setViewRange(10f);
+            disp.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GUI);
             disp.setTeleportDuration(2);
             disp.setBrightness(new Display.Brightness(15, 15));
 
             Transformation t = disp.getTransformation();
             disp.setTransformation(new Transformation(
-                    new Vector3f(cursorScale * 0.5f, -cursorScale * 0.5f, 0f),
+                    new Vector3f(0f, 0f, 0f),
                     t.getLeftRotation(),
-                    new Vector3f(-cursorScale, cursorScale, cursorScale),
+                    new Vector3f(cursorScale, cursorScale, 0.01f),
                     t.getRightRotation()));
         });
-        return new ItemCursor(itemDisplay, inActiveItem, activeItem);
+        return new ItemCursor(itemDisplay, inActiveItem, activeItem, cursorScale);
     }
 
     private Cursor getCursor(Location location, Component text) {
@@ -626,7 +637,7 @@ public final class MenuSession {
             td.setInvulnerable(true);
 
             td.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
-            td.setViewRange(2.0f);
+            td.setViewRange(10.0f);
             try {
                 td.setTeleportDuration(2);
             } catch (Throwable ignored) {
@@ -635,7 +646,7 @@ public final class MenuSession {
             td.setTransformation(new Transformation(
                     new Vector3f(0f, 0f, 0f),
                     t.getLeftRotation(),
-                    new Vector3f(cursorScale, cursorScale, 1f),
+                    new Vector3f(cursorScale, cursorScale, 0.01f),
                     t.getRightRotation()));
         });
         return null; // TODO: textCursor intilize
@@ -753,20 +764,22 @@ public final class MenuSession {
         float screenX = (deltaFromAnchor / yawDegPerEdge) * halfW;
         float screenY = -(pitchDelta / pitchDegPerEdge) * halfH;
 
-        if (screenX > halfW)
-            screenX = halfW;
-        if (screenX < -halfW)
-            screenX = -halfW;
-        if (screenY > halfH)
-            screenY = halfH;
-        if (screenY < -halfH)
-            screenY = -halfH;
+        float distanceRatio = (distance + CURSOR_Z_OFFSET) / distance;
+        float maxX = halfW * distanceRatio;
+        float maxY = halfH * distanceRatio;
+        if (screenX > maxX)
+            screenX = maxX;
+        if (screenX < -maxX)
+            screenX = -maxX;
+        if (screenY > maxY - CURSOR_Y_OFFSET)
+            screenY = maxY - CURSOR_Y_OFFSET;
+        if (screenY < -maxY - CURSOR_Y_OFFSET)
+            screenY = -maxY - CURSOR_Y_OFFSET;
 
         float visualX = screenX;
         float visualY = screenY + CURSOR_Y_OFFSET;
         cursor.teleport(computeLocAt(visualX, visualY, distance + CURSOR_Z_OFFSET));
 
-        float distanceRatio = (distance + CURSOR_Z_OFFSET) / distance;
         updateHover(visualX / distanceRatio, visualY / distanceRatio);
     }
 
@@ -803,7 +816,7 @@ public final class MenuSession {
             TextColor idleColor = parseColor(idleColorHex, NamedTextColor.WHITE);
             TextColor hoverColor = parseColor(hoverColorHex, NamedTextColor.GOLD);
 
-            MenuButton b = new MenuButton(id, text, sx, sy, hw, hh, scale, idleColor, hoverColor, cmd);
+            MenuButton b = new MenuButton(id, text, sx, sy, hw, hh, scale, idleColor, hoverColor, parseAction(cmd));
             Location loc = computeCursorLoc(sx, sy);
             b.spawn(loc);
             buttons.add(b);
@@ -839,6 +852,32 @@ public final class MenuSession {
         }
     }
 
+    private static ButtonAction parseAction(String cmd) {
+        if (cmd == null || cmd.isEmpty())
+            return null;
+
+        if (cmd.startsWith("open:")) {
+            String target = cmd.substring(5).trim();
+            return new OpenMenuAction(target);
+        }
+
+        if (cmd.startsWith("change:")) {
+            String[] parts = cmd.substring(7).split(":");
+            if (parts.length >= 4) {
+                String key = parts[0];
+                int delta = (int) Float.parseFloat(parts[1]);
+                int min = (int) Float.parseFloat(parts[2]);
+                int max = (int) Float.parseFloat(parts[3]);
+                return new ChangeSettingAction(key, delta, min, max);
+            }
+        }
+
+        if (cmd.startsWith("command:"))
+            cmd = cmd.substring(8).trim();
+
+        return new CommandAction(cmd);
+    }
+
     private void updateHover(float sx, float sy) {
         MenuButton newHover = null;
         for (MenuButton b : buttons) {
@@ -865,42 +904,32 @@ public final class MenuSession {
         if (currentHover == null)
             return;
         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
-        String action = currentHover.command;
-        if (action == null || action.isEmpty())
-            return;
+        if (currentHover.action != null)
+            currentHover.action.execute(this);
+    }
 
-        if (action.startsWith("open:")) {
-            String target = action.substring(5).trim();
-            loadScreen(target);
-            return;
+    public void changeSetting(String key, int delta, int min, int max) {
+        int current = playerSettings.getOrDefault(key, 0);
+        int newVal = Math.max(min, Math.min(max, current + delta));
+        playerSettings.put(key, newVal);
+        plugin.setPlayerSetting(player.getUniqueId(), key, newVal);
+        if (key.equals("fov")) {
+            applyFovScale();
+            if ("settings".equals(currentScreen))
+                loadScreen("settings");
         }
+    }
 
-        if (action.startsWith("change:")) {
-            String[] parts = action.substring(7).split(":");
-            if (parts.length >= 4) {
-                String key = parts[0];
-                int delta = (int) Float.parseFloat(parts[1]);
-                int min = (int) Float.parseFloat(parts[2]);
-                int max = (int) Float.parseFloat(parts[3]);
-                int current = playerSettings.getOrDefault(key, 0);
-                int newVal = Math.max(min, Math.min(max, current + delta));
-                playerSettings.put(key, newVal);
-                plugin.setPlayerSetting(player.getUniqueId(), key, newVal);
-                if (key.equals("fov")) {
-                    applyFovScale();
-                    if ("settings".equals(currentScreen)) {
-                        loadScreen("settings");
-                    }
-                }
-            }
-            return;
-        }
+    public Player getPlayer() {
+        return player;
+    }
 
-        String cmd = action;
-        if (action.startsWith("command:"))
-            cmd = action.substring(8).trim();
-        final String finalCmd = cmd.replace("%player%", player.getName());
-        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCmd));
+    public MenuPlugin getPlugin() {
+        return plugin;
+    }
+
+    public List<MenuButton> getButtons() {
+        return buttons;
     }
 
     public String getCurrentScreen() {

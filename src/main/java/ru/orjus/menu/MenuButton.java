@@ -1,5 +1,6 @@
 package ru.orjus.menu;
 
+import ru.orjus.menu.buttonAction.ButtonAction;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -20,16 +21,18 @@ public final class MenuButton {
     public final float halfWidth;
     public final float halfHeight;
     public final float scale;
-    public final String command;
+    public final ButtonAction action;
     public final TextColor idleColor;
     public final TextColor hoverColor;
 
     private TextDisplay display;
     private boolean hovered = false;
+    private boolean visible = true;
+    private Location spawnLocation;
 
     public MenuButton(String id, String text, float screenX, float screenY,
             float halfWidth, float halfHeight, float scale,
-            TextColor idleColor, TextColor hoverColor, String command) {
+            TextColor idleColor, TextColor hoverColor, ButtonAction action) {
         this.id = id;
         this.text = text;
         this.screenX = screenX;
@@ -39,10 +42,11 @@ public final class MenuButton {
         this.scale = scale;
         this.idleColor = idleColor;
         this.hoverColor = hoverColor;
-        this.command = command;
+        this.action = action;
     }
 
     public void spawn(Location loc) {
+        this.spawnLocation = loc.clone();
         display = (TextDisplay) loc.getWorld().spawnEntity(loc, EntityType.TEXT_DISPLAY);
         display.setBillboard(Display.Billboard.CENTER);
         display.setSeeThrough(true);
@@ -81,7 +85,7 @@ public final class MenuButton {
     }
 
     public boolean contains(float cursorX, float cursorY) {
-        return Math.abs(cursorX - screenX) <= halfWidth
+        return visible && Math.abs(cursorX - screenX) <= halfWidth
                 && Math.abs(cursorY - screenY) <= halfHeight;
     }
 
@@ -89,5 +93,22 @@ public final class MenuButton {
         if (display != null && !display.isDead())
             display.remove();
         display = null;
+        visible = false;
     }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        if (this.visible == visible)
+            return;
+        this.visible = visible;
+        if (visible && spawnLocation != null) {
+            spawn(spawnLocation);
+        } else {
+            remove();
+        }
+    }
+
 }
