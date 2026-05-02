@@ -1,0 +1,12 @@
+info:
+  namespace: orjusmenu
+
+items:
+  cursor:
+    display_name: "Menu Cursor"
+    permission: orjusmenu.cursor
+    resource:
+      material: PAPER
+      generate: true
+      textures:
+        - orjusmenu:item/cursor

@@ -1,0 +1,72 @@
+# Конфигурация настроена под FOV 90 у клиента (Видимость: 90 в настройках МК).
+
+menu:
+  world: world
+  x: 0.5
+  y: 150.0
+  z: 0.5
+  yaw: 0.0
+  pitch: 0.0
+
+cursor:
+  distance: 3.0
+  half-width: 2.85
+  half-height: 1.6
+  yaw-degrees-per-edge: 50
+  pitch-degrees-per-edge: 32
+  scale: 0.55
+
+  # ----- Внешний вид курсора -----
+  # По умолчанию используется кастомный предмет orjusmenu:cursor из ItemsAdder
+  # (плагин сам копирует ресурсы при первом запуске).
+  ia-id: "orjusmenu:cursor"
+
+  # Запасной вариант если ItemsAdder не загружен — текст-крестик
+  text: "✚"
+
+  # Альтернатива — обычный предмет с CustomModelData (без IA)
+  # item:
+  #   material: PAPER
+  #   custom-model-data: 200
+
+buttons:
+  - id: play
+    text: "Играть"
+    sx: -1.65
+    sy: 2.45
+    half-width: 0.30
+    half-height: 0.10
+    scale: 1.1
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    command: ""
+  - id: shop
+    text: "Магазин"
+    sx: -0.55
+    sy: 2.45
+    half-width: 0.36
+    half-height: 0.10
+    scale: 1.1
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    command: ""
+  - id: locker
+    text: "Шкарчик"
+    sx: 0.55
+    sy: 2.45
+    half-width: 0.36
+    half-height: 0.10
+    scale: 1.1
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    command: ""
+  - id: settings
+    text: "Настройки"
+    sx: 1.70
+    sy: 2.45
+    half-width: 0.42
+    half-height: 0.10
+    scale: 1.1
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    command: "open:settings"

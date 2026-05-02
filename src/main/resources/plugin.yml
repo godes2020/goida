@@ -1,0 +1,18 @@
+name: OrjusMenu
+version: 1.0.0
+main: ru.orjus.menu.MenuPlugin
+api-version: '1.21'
+authors: [orjus]
+description: Cutscene-style join menu with locked camera and mouse cursor (1.21.8)
+load: POSTWORLD
+folia-supported: false
+depend: [ProtocolLib]
+commands:
+  menu:
+    description: Toggle menu manually
+    usage: /menu [open|close]
+    permission: orjus.menu.use
+permissions:
+  orjus.menu.use:
+    description: Allows using the menu command
+    default: true
