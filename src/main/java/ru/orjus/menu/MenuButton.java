@@ -28,8 +28,8 @@ public final class MenuButton {
     private boolean hovered = false;
 
     public MenuButton(String id, String text, float screenX, float screenY,
-                      float halfWidth, float halfHeight, float scale,
-                      TextColor idleColor, TextColor hoverColor, String command) {
+            float halfWidth, float halfHeight, float scale,
+            TextColor idleColor, TextColor hoverColor, String command) {
         this.id = id;
         this.text = text;
         this.screenX = screenX;
@@ -62,19 +62,22 @@ public final class MenuButton {
     }
 
     private void renderText() {
-        if (display == null || display.isDead()) return;
+        if (display == null || display.isDead())
+            return;
         TextColor color = hovered ? hoverColor : idleColor;
         display.text(Component.text(text).color(color).decorate(TextDecoration.BOLD));
     }
 
     public void setHovered(boolean hovered) {
-        if (this.hovered == hovered) return;
+        if (this.hovered == hovered)
+            return;
         this.hovered = hovered;
         renderText();
     }
 
     public void setBackgroundColor(Color color) {
-        if (display != null && !display.isDead()) display.setBackgroundColor(color);
+        if (display != null && !display.isDead())
+            display.setBackgroundColor(color);
     }
 
     public boolean contains(float cursorX, float cursorY) {
@@ -83,7 +86,8 @@ public final class MenuButton {
     }
 
     public void remove() {
-        if (display != null && !display.isDead()) display.remove();
+        if (display != null && !display.isDead())
+            display.remove();
         display = null;
     }
 }

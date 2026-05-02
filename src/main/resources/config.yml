@@ -19,16 +19,19 @@ cursor:
   # ----- Внешний вид курсора -----
   # По умолчанию используется кастомный предмет orjusmenu:cursor из ItemsAdder
   # (плагин сам копирует ресурсы при первом запуске).
-  ia-id: "orjusmenu:cursor"
+  in-active:
+    ia-id: "orjusmenu:cursor"
 
   # Запасной вариант если ItemsAdder не загружен — текст-крестик
-  text: "✚"
+    text: "✚"
 
   # Альтернатива — обычный предмет с CustomModelData (без IA)
   # item:
   #   material: PAPER
   #   custom-model-data: 200
-
+  active:
+    ia-id: "orjusmenu:cursor2"
+    text: "*"
 buttons:
   - id: play
     text: "Играть"

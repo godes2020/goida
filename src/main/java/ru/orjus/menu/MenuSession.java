@@ -7,6 +7,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import ru.orjus.menu.cursor.Cursor;
+import ru.orjus.menu.cursor.ItemCursor;
+
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
@@ -33,7 +36,7 @@ public final class MenuSession {
     private float anchorPitch;
 
     private Pig cameraEntity;
-    private Display cursor;
+    private Cursor cursor;
     private final List<MenuButton> buttons = new ArrayList<>();
     private final List<TextDisplay> decorations = new ArrayList<>();
     private final java.util.HashMap<String, Integer> playerSettings = new java.util.HashMap<>();
@@ -180,8 +183,8 @@ public final class MenuSession {
             } catch (Throwable ignored) {
             }
         }
-        if (cursor != null && !cursor.isDead())
-            cursor.remove();
+        if (cursor != null && !cursor.getDisplay().isDead())
+            cursor.getDisplay().remove();
         if (cameraEntity != null && !cameraEntity.isDead())
             cameraEntity.remove();
         clearScreenElements();
@@ -578,12 +581,14 @@ public final class MenuSession {
         Location loc = computeLocAt(0f, 0f, distance + CURSOR_Z_OFFSET);
         ConfigurationSection cfg = plugin.getConfig();
 
-        ItemStack customItem = resolveCustomItem(cfg.getString("cursor.ia-id", ""),
-                cfg.getString("cursor.item.material", ""),
-                cfg.getInt("cursor.item.custom-model-data", 0));
-
-        if (customItem != null) {
-            cursor = getCursor(loc, customItem);
+        ItemStack inActiveItem = resolveCustomItem(cfg.getString("cursor.in-active.ia-id", ""),
+                cfg.getString("cursor.in-active.item.material", ""),
+                cfg.getInt("cursor.in-active.item.custom-model-data", 0));
+        ItemStack activeItem = resolveCustomItem(cfg.getString("cursor.active.ia-id", ""),
+                cfg.getString("cursor.active.item.material", ""),
+                cfg.getInt("cursor.active.item.custom-model-data", 0));
+        if (inActiveItem != null && activeItem != null) {
+            cursor = getCursor(loc, inActiveItem, activeItem);
         } else {
             String txt = cfg.getString("cursor.text", "✚");
             Component textComponent = Component.text(txt).color(NamedTextColor.WHITE).decorate(TextDecoration.BOLD);
@@ -591,12 +596,12 @@ public final class MenuSession {
         }
     }
 
-    private ItemDisplay getCursor(Location location, ItemStack itemStack) {
-        return location.getWorld().spawn(location, ItemDisplay.class, disp -> {
+    private Cursor getCursor(Location location, ItemStack inActiveItem, ItemStack activeItem) {
+        ItemDisplay itemDisplay = location.getWorld().spawn(location, ItemDisplay.class, disp -> {
             disp.setBillboard(Display.Billboard.CENTER);
             disp.setPersistent(false);
             disp.setInvulnerable(true);
-            disp.setItemStack(itemStack);
+            disp.setItemStack(inActiveItem);
             disp.setViewRange(2f);
             // disp.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GUI);
             disp.setTeleportDuration(2);
@@ -609,10 +614,11 @@ public final class MenuSession {
                     new Vector3f(-cursorScale, cursorScale, cursorScale),
                     t.getRightRotation()));
         });
+        return new ItemCursor(itemDisplay, inActiveItem, activeItem);
     }
 
-    private TextDisplay getCursor(Location location, Component text) {
-        return location.getWorld().spawn(location, TextDisplay.class, td -> {
+    private Cursor getCursor(Location location, Component text) {
+        TextDisplay textDisplay = location.getWorld().spawn(location, TextDisplay.class, td -> {
             td.setBillboard(Display.Billboard.CENTER);
             td.setSeeThrough(true);
             td.setShadowed(false);
@@ -632,6 +638,7 @@ public final class MenuSession {
                     new Vector3f(cursorScale, cursorScale, 1f),
                     t.getRightRotation()));
         });
+        return null; // TODO: textCursor intilize
     }
 
     private ItemStack resolveCustomItem(String iaId, String material, int customModelData) {
@@ -684,7 +691,7 @@ public final class MenuSession {
     public void tick() {
         if (!player.isOnline())
             return;
-        if (cursor == null || cursor.isDead())
+        if (cursor == null || cursor.getDisplay().isDead())
             return;
         if (cameraEntity == null || cameraEntity.isDead())
             return;
@@ -846,6 +853,9 @@ public final class MenuSession {
             if (newHover != null) {
                 newHover.setHovered(true);
                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.3f, 1.8f);
+                cursor.setActive();
+            } else {
+                cursor.setInActive();
             }
             currentHover = newHover;
         }
