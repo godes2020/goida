@@ -22,12 +22,18 @@ public final class MenuPlugin extends JavaPlugin {
 
     private File playerDataFile;
     private YamlConfiguration playerData;
+    private YamlConfiguration buttonsConfig;
+    private YamlConfiguration actionsConfig;
+    private YamlConfiguration cursorConfig;
 
     @Override
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
 
+        loadButtonsConfig();
+        loadActionsConfig();
+        loadCursorConfig();
         loadPlayerData();
         installItemsAdderResources();
 
@@ -52,6 +58,42 @@ public final class MenuPlugin extends JavaPlugin {
     public void onDisable() {
         if (menuManager != null) menuManager.shutdown();
         savePlayerData();
+    }
+
+    private void loadButtonsConfig() {
+        File buttonsFile = new File(getDataFolder(), "buttons.yml");
+        if (!buttonsFile.exists()) {
+            saveResource("buttons.yml", false);
+        }
+        buttonsConfig = YamlConfiguration.loadConfiguration(buttonsFile);
+    }
+
+    public YamlConfiguration getButtonsConfig() {
+        return buttonsConfig;
+    }
+
+    private void loadActionsConfig() {
+        File actionsFile = new File(getDataFolder(), "actions.yml");
+        if (!actionsFile.exists()) {
+            saveResource("actions.yml", false);
+        }
+        actionsConfig = YamlConfiguration.loadConfiguration(actionsFile);
+    }
+
+    public YamlConfiguration getActionsConfig() {
+        return actionsConfig;
+    }
+
+    private void loadCursorConfig() {
+        File cursorFile = new File(getDataFolder(), "cursor.yml");
+        if (!cursorFile.exists()) {
+            saveResource("cursor.yml", false);
+        }
+        cursorConfig = YamlConfiguration.loadConfiguration(cursorFile);
+    }
+
+    public YamlConfiguration getCursorConfig() {
+        return cursorConfig;
     }
 
     private void loadPlayerData() {

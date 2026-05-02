@@ -1,0 +1,23 @@
+# Настройки курсора
+distance: 3.0
+half-width: 2.85
+half-height: 1.6
+yaw-degrees-per-edge: 50
+pitch-degrees-per-edge: 32
+scale: 0.35
+
+# Текст-заменитель если ItemsAdder не загружен
+text: "✚"
+
+# ----- Внешний вид курсора (через ItemsAdder или кастомный предмет) -----
+in-active:
+  ia-id: "orjusmenu:cursor"
+  item:
+    material: ""
+    custom-model-data: 0
+
+active:
+  ia-id: "orjusmenu:cursor2"
+  item:
+    material: ""
+    custom-model-data: 0

@@ -28,7 +28,7 @@ public class ItemCursor implements Cursor {
         itemDisplay.setTransformation(new Transformation(
                 t.getTranslation(),
                 t.getLeftRotation(),
-                new Vector3f(scale, scale, Z_THICKNESS),
+                new Vector3f(-scale, scale, Z_THICKNESS),
                 t.getRightRotation()));
     }
 
@@ -39,7 +39,7 @@ public class ItemCursor implements Cursor {
         itemDisplay.setTransformation(new Transformation(
                 t.getTranslation(),
                 t.getLeftRotation(),
-                new Vector3f(scale, scale, Z_THICKNESS),
+                new Vector3f(-scale, scale, Z_THICKNESS),
                 t.getRightRotation()));
     }
 

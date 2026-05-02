@@ -1,0 +1,172 @@
+# Конфигурация кнопок для всех меню
+# Кнопки могут быть текстовыми (text) или предметными (item):
+#
+# Пример предметной кнопки:
+#   my_button:
+#     sx: 0.0
+#     sy: 0.0
+#     half-width: 0.40
+#     half-height: 0.40
+#     scale: 1.0
+#     item:
+#       ia-id: "orjusmenu:some_item"
+#       material: ""
+#       custom-model-data: 0
+#     item-hover:
+#       ia-id: "orjusmenu:some_item_hover"
+#       material: ""
+#       custom-model-data: 0
+#     actions: []
+#
+buttons:
+  play:
+    text: "Играть"
+    sx: -1.65
+    sy: 2.45
+    half-width: 0.40
+    half-height: 0.15
+    scale: 1.1
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    actions: []
+  shop:
+    text: "Магазин"
+    sx: -0.55
+    sy: 2.45
+    half-width: 0.46
+    half-height: 0.15
+    scale: 1.1
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    actions: []
+  locker:
+    text: "Шкарчик"
+    sx: 0.55
+    sy: 2.45
+    half-width: 0.46
+    half-height: 0.15
+    scale: 1.1
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    actions: []
+  settings:
+    text: "Настройки"
+    sx: 1.70
+    sy: 2.45
+    half-width: 0.52
+    half-height: 0.15
+    scale: 1.1
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    actions:
+      - open_settings
+  fov_dec:
+    text: "◄"
+    sx: -0.85
+    sy: -0.50
+    half-width: 0.22
+    half-height: 0.18
+    scale: 1.8
+    color: "#FFAA00"
+    hover-color: "#FFFFFF"
+    actions:
+      - fov_dec
+  fov_inc:
+    text: "►"
+    sx: 0.85
+    sy: -0.50
+    half-width: 0.22
+    half-height: 0.18
+    scale: 1.8
+    color: "#FFAA00"
+    hover-color: "#FFFFFF"
+    actions:
+      - fov_inc
+  continue:
+    text: "Продолжить"
+    sx: 0.0
+    sy: -1.15
+    half-width: 1.10
+    half-height: 0.18
+    scale: 1.5
+    color: "#1A1A1A"
+    hover-color: "#FFFFFF"
+    background-color: "#FF9100"
+    actions:
+      - continue_to_main
+  social:
+    text: "Мы в соцсетях"
+    sx: 0.0
+    sy: 1.50
+    half-width: 0.60
+    half-height: 0.15
+    scale: 0.9
+    color: "#FFAA00"
+    hover-color: "#FFFFFF"
+    actions: []
+    reveal:
+      - discord
+      - telegram
+      - vk
+      - youtube
+      - site
+  discord:
+    text: "Discord"
+    sx: -1.60
+    sy: 1.10
+    half-width: 0.40
+    half-height: 0.12
+    scale: 0.8
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    visible: false
+    actions:
+      - open_discord
+  telegram:
+    text: "Telegram"
+    sx: -0.80
+    sy: 1.10
+    half-width: 0.40
+    half-height: 0.12
+    scale: 0.8
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    visible: false
+    actions:
+      - open_telegram
+  vk:
+    text: "VK"
+    sx: 0.0
+    sy: 1.10
+    half-width: 0.30
+    half-height: 0.12
+    scale: 0.8
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    visible: false
+    actions:
+      - open_vk
+  youtube:
+    text: "YouTube"
+    sx: 0.80
+    sy: 1.10
+    half-width: 0.40
+    half-height: 0.12
+    scale: 0.8
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    visible: false
+    actions:
+      - open_youtube
+  site:
+    text: "Сайт"
+    sx: 1.60
+    sy: 1.10
+    half-width: 0.30
+    half-height: 0.12
+    scale: 0.8
+    color: "#FFFFFF"
+    hover-color: "#FFAA00"
+    visible: false
+    actions:
+      - open_site

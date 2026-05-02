@@ -1,0 +1,35 @@
+# Настройки действий для кнопок
+actions:
+  open_settings:
+    type: open_menu
+    screen: settings
+  fov_dec:
+    type: change_setting
+    key: fov
+    delta: -1
+    min: 30
+    max: 110
+  fov_inc:
+    type: change_setting
+    key: fov
+    delta: 1
+    min: 30
+    max: 110
+  continue_to_main:
+    type: open_menu
+    screen: main
+  open_discord:
+    type: open_link
+    url: "https://discord.gg/example"
+  open_telegram:
+    type: open_link
+    url: "https://t.me/example"
+  open_vk:
+    type: open_link
+    url: "https://vk.com/example"
+  open_youtube:
+    type: open_link
+    url: "https://youtube.com/@example"
+  open_site:
+    type: open_link
+    url: "https://example.com"

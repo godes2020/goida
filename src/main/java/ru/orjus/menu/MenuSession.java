@@ -3,7 +3,9 @@ package ru.orjus.menu;
 import ru.orjus.menu.buttonAction.ButtonAction;
 import ru.orjus.menu.buttonAction.ChangeSettingAction;
 import ru.orjus.menu.buttonAction.CommandAction;
+import ru.orjus.menu.buttonAction.OpenLinkAction;
 import ru.orjus.menu.buttonAction.OpenMenuAction;
+import ru.orjus.menu.buttonAction.ToggleButtonAction;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
@@ -28,7 +30,6 @@ import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public final class MenuSession {
 
@@ -47,6 +48,8 @@ public final class MenuSession {
     private TextDisplay fovValueDisplay;
     private String currentScreen = "main";
     private MenuButton currentHover = null;
+    private float lastHoverX;
+    private float lastHoverY;
 
     private float logicalYaw = 0f;
     private float lastRawYaw = 0f;
@@ -61,7 +64,7 @@ public final class MenuSession {
     private float baseHalfH = 1.6f;
     private float yawDegPerEdge = 50f;
     private float pitchDegPerEdge = 32f;
-    private float cursorScale = 0.55f;
+    private float cursorScale = 0.45f;
     private static final int BASE_FOV = 90;
 
     private GameMode previousGameMode;
@@ -89,14 +92,15 @@ public final class MenuSession {
                 cfg.getDouble("menu.z", 0.5),
                 anchorYaw, anchorPitch);
 
-        distance = (float) cfg.getDouble("cursor.distance", 3.0);
-        baseHalfW = (float) cfg.getDouble("cursor.half-width", 2.85);
-        baseHalfH = (float) cfg.getDouble("cursor.half-height", 1.6);
+        ConfigurationSection curCfg = plugin.getCursorConfig();
+        distance = (float) curCfg.getDouble("distance", 3.0);
+        baseHalfW = (float) curCfg.getDouble("half-width", 2.85);
+        baseHalfH = (float) curCfg.getDouble("half-height", 1.6);
         halfW = baseHalfW;
         halfH = baseHalfH;
-        yawDegPerEdge = (float) cfg.getDouble("cursor.yaw-degrees-per-edge", 50.0);
-        pitchDegPerEdge = (float) cfg.getDouble("cursor.pitch-degrees-per-edge", 32.0);
-        cursorScale = (float) cfg.getDouble("cursor.scale", 0.55);
+        yawDegPerEdge = (float) curCfg.getDouble("yaw-degrees-per-edge", 50.0);
+        pitchDegPerEdge = (float) curCfg.getDouble("pitch-degrees-per-edge", 32.0);
+        cursorScale = (float) curCfg.getDouble("scale", 0.55);
 
         previousGameMode = player.getGameMode();
         previousFlying = player.isFlying();
@@ -214,11 +218,10 @@ public final class MenuSession {
     public void loadScreen(String name) {
         clearScreenElements();
         currentScreen = name;
-        if (name.equals("main")) {
-            spawnButtons();
-        } else if (name.equals("settings")) {
+        if (name.equals("settings")) {
             spawnSettingsScreen();
         }
+        spawnButtons(name);
     }
 
     private TextDisplay spawnDecorationText(String text, float sx, float sy, float scale,
@@ -254,7 +257,6 @@ public final class MenuSession {
     private void spawnSettingsScreen() {
         org.bukkit.Color transparent = org.bukkit.Color.fromARGB(0, 0, 0, 0);
         org.bukkit.Color panelBg = org.bukkit.Color.fromARGB(230, 5, 5, 5);
-        org.bukkit.Color orangeBg = org.bukkit.Color.fromARGB(255, 255, 145, 0);
         TextColor white = NamedTextColor.WHITE;
         TextColor orange = TextColor.fromHexString("#FFAA00");
 
@@ -288,15 +290,7 @@ public final class MenuSession {
         spawnDecorationText("Задайте FOV", 0f, 0.10f, 1.0f,
                 NamedTextColor.GRAY, false, transparent);
 
-        float arrowDx = 0.85f;
         float fovRowY = -0.50f;
-
-        MenuButton dec = new MenuButton("fov_dec", "◄", -arrowDx, fovRowY,
-                0.22f, 0.18f, 1.8f, orange, white,
-                new ChangeSettingAction("fov", -1, 30, 110));
-        dec.spawn(computeCursorLoc(-arrowDx, fovRowY));
-        buttons.add(dec);
-
         int fov = playerSettings.getOrDefault("fov", BASE_FOV);
         Location valueLoc = computeCursorLoc(0f, fovRowY);
         fovValueDisplay = (TextDisplay) valueLoc.getWorld().spawnEntity(valueLoc, EntityType.TEXT_DISPLAY);
@@ -315,21 +309,6 @@ public final class MenuSession {
                 new Vector3f(2.0f, 2.0f, 1f),
                 tt.getRightRotation()));
 
-        MenuButton inc = new MenuButton("fov_inc", "►", arrowDx, fovRowY,
-                0.22f, 0.18f, 1.8f, orange, white,
-                new ChangeSettingAction("fov", 1, 30, 110));
-        inc.spawn(computeCursorLoc(arrowDx, fovRowY));
-        buttons.add(inc);
-
-        MenuButton cont = new MenuButton("continue", "Продолжить", 0f, -1.15f,
-                1.10f, 0.18f, 1.5f,
-                TextColor.fromHexString("#1A1A1A"),
-                TextColor.fromHexString("#FFFFFF"),
-                new OpenMenuAction("main"));
-        cont.spawn(computeCursorLoc(0f, -1.15f));
-        cont.setBackgroundColor(orangeBg);
-        buttons.add(cont);
-
         spawnFovBrackets();
     }
 
@@ -344,12 +323,13 @@ public final class MenuSession {
         float[] xy = computeBracketPos(fov);
         float ix = xy[0] * BRACKET_INSET;
         float iy = xy[1] * BRACKET_INSET;
+        float yOff = -0.08f;
         String[] chars = { "┏", "┓", "┗", "┛" };
         float[][] positions = {
-                { -ix, iy },
-                { ix, iy },
-                { -ix, -iy },
-                { ix, -iy }
+                { -ix, iy + yOff },
+                { ix, iy + yOff },
+                { -ix, -iy + yOff },
+                { ix, -iy + yOff }
         };
 
         TextColor orange = TextColor.fromHexString("#FFAA00");
@@ -382,11 +362,12 @@ public final class MenuSession {
         float[] xy = computeBracketPos(fov);
         float ix = xy[0] * BRACKET_INSET;
         float iy = xy[1] * BRACKET_INSET;
+        float yOff = -0.08f;
         float[][] positions = {
-                { -ix, iy },
-                { ix, iy },
-                { -ix, -iy },
-                { ix, -iy }
+                { -ix, iy + yOff },
+                { ix, iy + yOff },
+                { -ix, -iy + yOff },
+                { ix, -iy + yOff }
         };
         for (int i = 0; i < 4; i++) {
             TextDisplay td = fovBrackets.get(i);
@@ -586,22 +567,21 @@ public final class MenuSession {
     }
 
     private static final float CURSOR_Z_OFFSET = -0.40f;
-    private static final float CURSOR_Y_OFFSET = -0.30f;
 
     private void spawnCursor() {
         Location loc = computeLocAt(0f, 0f, distance + CURSOR_Z_OFFSET);
-        ConfigurationSection cfg = plugin.getConfig();
+        ConfigurationSection curCfg = plugin.getCursorConfig();
 
-        ItemStack inActiveItem = resolveCustomItem(cfg.getString("cursor.in-active.ia-id", ""),
-                cfg.getString("cursor.in-active.item.material", ""),
-                cfg.getInt("cursor.in-active.item.custom-model-data", 0));
-        ItemStack activeItem = resolveCustomItem(cfg.getString("cursor.active.ia-id", ""),
-                cfg.getString("cursor.active.item.material", ""),
-                cfg.getInt("cursor.active.item.custom-model-data", 0));
+        ItemStack inActiveItem = resolveCustomItem(curCfg.getString("in-active.ia-id", ""),
+                curCfg.getString("in-active.item.material", ""),
+                curCfg.getInt("in-active.item.custom-model-data", 0));
+        ItemStack activeItem = resolveCustomItem(curCfg.getString("active.ia-id", ""),
+                curCfg.getString("active.item.material", ""),
+                curCfg.getInt("active.item.custom-model-data", 0));
         if (inActiveItem != null && activeItem != null) {
             cursor = getCursor(loc, inActiveItem, activeItem);
         } else {
-            String txt = cfg.getString("cursor.text", "✚");
+            String txt = curCfg.getString("text", "✚");
             Component textComponent = Component.text(txt).color(NamedTextColor.WHITE).decorate(TextDecoration.BOLD);
             cursor = getCursor(loc, textComponent);
         }
@@ -622,7 +602,7 @@ public final class MenuSession {
             disp.setTransformation(new Transformation(
                     new Vector3f(0f, 0f, 0f),
                     t.getLeftRotation(),
-                    new Vector3f(cursorScale, cursorScale, 0.01f),
+                    new Vector3f(-cursorScale, cursorScale, 0.01f),
                     t.getRightRotation()));
         });
         return new ItemCursor(itemDisplay, inActiveItem, activeItem, cursorScale);
@@ -771,16 +751,14 @@ public final class MenuSession {
             screenX = maxX;
         if (screenX < -maxX)
             screenX = -maxX;
-        if (screenY > maxY - CURSOR_Y_OFFSET)
-            screenY = maxY - CURSOR_Y_OFFSET;
-        if (screenY < -maxY - CURSOR_Y_OFFSET)
-            screenY = -maxY - CURSOR_Y_OFFSET;
+        if (screenY > maxY)
+            screenY = maxY;
+        if (screenY < -maxY)
+            screenY = -maxY;
 
-        float visualX = screenX;
-        float visualY = screenY + CURSOR_Y_OFFSET;
-        cursor.teleport(computeLocAt(visualX, visualY, distance + CURSOR_Z_OFFSET));
+        cursor.teleport(computeLocAt(screenX, screenY, distance + CURSOR_Z_OFFSET));
 
-        updateHover(visualX / distanceRatio, visualY / distanceRatio);
+        updateHover(screenX / distanceRatio, screenY / distanceRatio);
     }
 
     public void reattachCamera() {
@@ -792,52 +770,127 @@ public final class MenuSession {
         }
     }
 
-    @SuppressWarnings({ "rawtypes" })
-    private void spawnButtons() {
-        List<?> list = plugin.getConfig().getList("buttons");
-        if (list == null)
+    private void spawnButtons(String screen) {
+        List<String> ids = plugin.getConfig().getStringList("menus." + screen + ".buttons");
+        if (ids == null || ids.isEmpty())
             return;
+        org.bukkit.configuration.file.YamlConfiguration btnCfg = plugin.getButtonsConfig();
         float s = fovScale();
-        for (Object o : list) {
-            if (!(o instanceof Map))
-                continue;
-            Map map = (Map) o;
-            String id = stringOf(map.get("id"), "btn");
-            String text = stringOf(map.get("text"), id);
-            float sx = numberOf(map.get("sx"), 0f) * s;
-            float sy = numberOf(map.get("sy"), 0f) * s;
-            float hw = numberOf(map.get("half-width"), 0.18f) * s;
-            float hh = numberOf(map.get("half-height"), 0.08f) * s;
-            float scale = numberOf(map.get("scale"), 1.0f);
-            String idleColorHex = stringOf(map.get("color"), "#FFFFFF");
-            String hoverColorHex = stringOf(map.get("hover-color"), "#FFAA00");
-            String cmd = stringOf(map.get("command"), "");
 
-            TextColor idleColor = parseColor(idleColorHex, NamedTextColor.WHITE);
-            TextColor hoverColor = parseColor(hoverColorHex, NamedTextColor.GOLD);
-
-            MenuButton b = new MenuButton(id, text, sx, sy, hw, hh, scale, idleColor, hoverColor, parseAction(cmd));
-            Location loc = computeCursorLoc(sx, sy);
-            b.spawn(loc);
-            buttons.add(b);
-        }
-    }
-
-    private static String stringOf(Object o, String def) {
-        return o == null ? def : String.valueOf(o);
-    }
-
-    private static float numberOf(Object o, float def) {
-        if (o instanceof Number n)
-            return n.floatValue();
-        if (o instanceof String s) {
-            try {
-                return Float.parseFloat(s);
-            } catch (NumberFormatException ignored) {
-                return def;
+        // Collect all button IDs: direct + reveal children
+        List<String> allIds = new ArrayList<>(ids);
+        for (String id : ids) {
+            List<String> revealIds = btnCfg.getStringList("buttons." + id + ".reveal");
+            for (String rid : revealIds) {
+                if (!allIds.contains(rid))
+                    allIds.add(rid);
             }
         }
-        return def;
+
+        for (String id : allIds) {
+            ConfigurationSection btn = btnCfg.getConfigurationSection("buttons." + id);
+            if (btn == null)
+                continue;
+            String text = btn.getString("text", id);
+            float sx = (float) btn.getDouble("sx", 0.0) * s;
+            float sy = (float) btn.getDouble("sy", 0.0) * s;
+            float hw = (float) btn.getDouble("half-width", 0.18) * s;
+            float hh = (float) btn.getDouble("half-height", 0.08) * s;
+            float scale = (float) btn.getDouble("scale", 1.0);
+            TextColor idleColor = parseColor(btn.getString("color"), NamedTextColor.WHITE);
+            TextColor hoverColor = parseColor(btn.getString("hover-color"), NamedTextColor.GOLD);
+            ButtonAction action = loadAction(btn.getStringList("actions"));
+
+            ItemStack idleItem = null;
+            ItemStack hoverItem = null;
+            ConfigurationSection itemSec = btn.getConfigurationSection("item");
+            if (itemSec != null) {
+                idleItem = resolveCustomItem(
+                        itemSec.getString("ia-id", ""),
+                        itemSec.getString("material", ""),
+                        itemSec.getInt("custom-model-data", 0));
+            }
+            ConfigurationSection hoverItemSec = btn.getConfigurationSection("item-hover");
+            if (hoverItemSec != null) {
+                hoverItem = resolveCustomItem(
+                        hoverItemSec.getString("ia-id", ""),
+                        hoverItemSec.getString("material", ""),
+                        hoverItemSec.getInt("custom-model-data", 0));
+            }
+            if (idleItem != null && hoverItem == null) {
+                hoverItem = idleItem;
+            }
+
+            MenuButton b = new MenuButton(id, text, sx, sy, hw, hh, scale,
+                    idleColor, hoverColor, action, idleItem, hoverItem);
+            Location loc = computeCursorLoc(sx, sy);
+            b.spawn(loc);
+            String bgHex = btn.getString("background-color");
+            if (bgHex != null) {
+                try {
+                    java.awt.Color awt = java.awt.Color.decode(bgHex);
+                    b.setBackgroundColor(org.bukkit.Color.fromRGB(awt.getRed(), awt.getGreen(), awt.getBlue()));
+                } catch (Throwable ignored) {
+                }
+            }
+            if (btn.contains("visible") && !btn.getBoolean("visible")) {
+                b.setVisible(false);
+            }
+            buttons.add(b);
+        }
+        // second pass: link reveal relationships
+        for (MenuButton b : buttons) {
+            ConfigurationSection btn = btnCfg.getConfigurationSection("buttons." + b.id);
+            if (btn == null || !btn.contains("reveal"))
+                continue;
+            List<String> revealIds = btn.getStringList("reveal");
+            if (revealIds.isEmpty())
+                continue;
+            List<MenuButton> children = new ArrayList<>();
+            for (String rid : revealIds) {
+                for (MenuButton other : buttons) {
+                    if (other.id.equals(rid)) {
+                        children.add(other);
+                        other.setParent(b);
+                        break;
+                    }
+                }
+            }
+            b.setChildren(children);
+        }
+    }
+
+    private ButtonAction loadAction(List<String> actionIds) {
+        if (actionIds == null || actionIds.isEmpty())
+            return null;
+        org.bukkit.configuration.file.YamlConfiguration actCfg = plugin.getActionsConfig();
+        for (String aid : actionIds) {
+            ConfigurationSection sec = actCfg.getConfigurationSection("actions." + aid);
+            if (sec == null)
+                continue;
+            return parseActionFromSection(sec);
+        }
+        return null;
+    }
+
+    private ButtonAction parseActionFromSection(ConfigurationSection sec) {
+        String type = sec.getString("type");
+        if (type == null)
+            return null;
+        return switch (type) {
+            case "open_menu" -> new OpenMenuAction(sec.getString("screen", "main"));
+            case "command" -> new CommandAction(sec.getString("command", ""));
+            case "change_setting" -> {
+                String key = sec.getString("key", "fov");
+                int delta = sec.getInt("delta", 0);
+                int min = sec.getInt("min", 0);
+                int max = sec.getInt("max", 100);
+                yield new ChangeSettingAction(key, delta, min, max);
+            }
+            case "open_link" -> new OpenLinkAction(sec.getString("url", ""));
+            case "toggle_button" -> new ToggleButtonAction(sec.getString("target", ""));
+            default -> null;
+        };
     }
 
     private static TextColor parseColor(String hex, TextColor fallback) {
@@ -852,33 +905,9 @@ public final class MenuSession {
         }
     }
 
-    private static ButtonAction parseAction(String cmd) {
-        if (cmd == null || cmd.isEmpty())
-            return null;
-
-        if (cmd.startsWith("open:")) {
-            String target = cmd.substring(5).trim();
-            return new OpenMenuAction(target);
-        }
-
-        if (cmd.startsWith("change:")) {
-            String[] parts = cmd.substring(7).split(":");
-            if (parts.length >= 4) {
-                String key = parts[0];
-                int delta = (int) Float.parseFloat(parts[1]);
-                int min = (int) Float.parseFloat(parts[2]);
-                int max = (int) Float.parseFloat(parts[3]);
-                return new ChangeSettingAction(key, delta, min, max);
-            }
-        }
-
-        if (cmd.startsWith("command:"))
-            cmd = cmd.substring(8).trim();
-
-        return new CommandAction(cmd);
-    }
-
     private void updateHover(float sx, float sy) {
+        lastHoverX = sx;
+        lastHoverY = sy;
         MenuButton newHover = null;
         for (MenuButton b : buttons) {
             if (b.contains(sx, sy)) {
@@ -903,9 +932,19 @@ public final class MenuSession {
     public void handleClick() {
         if (currentHover == null)
             return;
+        MenuButton target = currentHover;
+        List<MenuButton> children = currentHover.getChildren();
+        if (children != null) {
+            for (MenuButton child : children) {
+                if (child.isVisible() && child.contains(lastHoverX, lastHoverY)) {
+                    target = child;
+                    break;
+                }
+            }
+        }
         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
-        if (currentHover.action != null)
-            currentHover.action.execute(this);
+        if (target.action != null)
+            target.action.execute(this);
     }
 
     public void changeSetting(String key, int delta, int min, int max) {
