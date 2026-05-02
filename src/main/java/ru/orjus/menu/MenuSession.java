@@ -71,7 +71,8 @@ public final class MenuSession {
     public void start() {
         ConfigurationSection cfg = plugin.getConfig();
         World world = Bukkit.getWorld(cfg.getString("menu.world", "world"));
-        if (world == null) world = player.getWorld();
+        if (world == null)
+            world = player.getWorld();
 
         anchorYaw = (float) cfg.getDouble("menu.yaw", 0.0);
         anchorPitch = (float) cfg.getDouble("menu.pitch", 0.0);
@@ -105,17 +106,31 @@ public final class MenuSession {
             if (invis != null) {
                 player.addPotionEffect(new PotionEffect(invis, Integer.MAX_VALUE, 0, false, false, false));
             }
-        } catch (Throwable ignored) {}
-        try { player.setInvisible(true); } catch (Throwable ignored) {}
-        try { player.setCollidable(false); } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
+        try {
+            player.setInvisible(true);
+        } catch (Throwable ignored) {
+        }
+        try {
+            player.setCollidable(false);
+        } catch (Throwable ignored) {
+        }
 
-        try { player.setLevel(0); } catch (Throwable ignored) {}
-        try { player.setExp(0f); } catch (Throwable ignored) {}
+        try {
+            player.setLevel(0);
+        } catch (Throwable ignored) {
+        }
+        try {
+            player.setExp(0f);
+        } catch (Throwable ignored) {
+        }
 
         spawnCameraPig();
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (cameraEntity == null || cameraEntity.isDead() || !player.isOnline()) return;
+            if (cameraEntity == null || cameraEntity.isDead() || !player.isOnline())
+                return;
 
             player.teleport(anchor);
 
@@ -143,34 +158,48 @@ public final class MenuSession {
             sendCameraPacket(player.getEntityId());
             int gmId = previousGameMode == GameMode.SURVIVAL ? 0
                     : previousGameMode == GameMode.CREATIVE ? 1
-                    : previousGameMode == GameMode.ADVENTURE ? 2
-                    : previousGameMode == GameMode.SPECTATOR ? 3 : 0;
+                            : previousGameMode == GameMode.ADVENTURE ? 2
+                                    : previousGameMode == GameMode.SPECTATOR ? 3 : 0;
             sendFakeGamemode(gmId);
-            if (previousGameMode != null) player.setGameMode(previousGameMode);
+            if (previousGameMode != null)
+                player.setGameMode(previousGameMode);
             player.setAllowFlight(previousAllowFlight);
             player.setFlying(previousFlying);
-            try { player.setInvisible(false); } catch (Throwable ignored) {}
-            try { player.setCollidable(true); } catch (Throwable ignored) {}
+            try {
+                player.setInvisible(false);
+            } catch (Throwable ignored) {
+            }
+            try {
+                player.setCollidable(true);
+            } catch (Throwable ignored) {
+            }
             try {
                 PotionEffectType invis = PotionEffectType.INVISIBILITY;
-                if (invis != null && player.hasPotionEffect(invis)) player.removePotionEffect(invis);
-            } catch (Throwable ignored) {}
+                if (invis != null && player.hasPotionEffect(invis))
+                    player.removePotionEffect(invis);
+            } catch (Throwable ignored) {
+            }
         }
-        if (cursor != null && !cursor.isDead()) cursor.remove();
-        if (cameraEntity != null && !cameraEntity.isDead()) cameraEntity.remove();
+        if (cursor != null && !cursor.isDead())
+            cursor.remove();
+        if (cameraEntity != null && !cameraEntity.isDead())
+            cameraEntity.remove();
         clearScreenElements();
         cursor = null;
         cameraEntity = null;
     }
 
     private void clearScreenElements() {
-        for (MenuButton b : buttons) b.remove();
+        for (MenuButton b : buttons)
+            b.remove();
         buttons.clear();
         for (TextDisplay td : decorations) {
-            if (td != null && !td.isDead()) td.remove();
+            if (td != null && !td.isDead())
+                td.remove();
         }
         decorations.clear();
-        if (fovValueDisplay != null && !fovValueDisplay.isDead()) fovValueDisplay.remove();
+        if (fovValueDisplay != null && !fovValueDisplay.isDead())
+            fovValueDisplay.remove();
         fovValueDisplay = null;
         currentHover = null;
     }
@@ -186,8 +215,8 @@ public final class MenuSession {
     }
 
     private TextDisplay spawnDecorationText(String text, float sx, float sy, float scale,
-                                            TextColor color, boolean bold,
-                                            org.bukkit.Color bgColor) {
+            TextColor color, boolean bold,
+            org.bukkit.Color bgColor) {
         Location loc = computeCursorLoc(sx, sy);
         TextDisplay td = (TextDisplay) loc.getWorld().spawnEntity(loc, EntityType.TEXT_DISPLAY);
         td.setBillboard(Display.Billboard.CENTER);
@@ -199,7 +228,8 @@ public final class MenuSession {
         td.setViewRange(2.0f);
 
         Component comp = Component.text(text).color(color);
-        if (bold) comp = comp.decorate(TextDecoration.BOLD);
+        if (bold)
+            comp = comp.decorate(TextDecoration.BOLD);
         td.text(comp);
 
         Transformation t = td.getTransformation();
@@ -296,18 +326,19 @@ public final class MenuSession {
 
     private void spawnFovBrackets() {
         for (TextDisplay td : fovBrackets) {
-            if (td != null && !td.isDead()) td.remove();
+            if (td != null && !td.isDead())
+                td.remove();
         }
         fovBrackets.clear();
 
         int fov = playerSettings.getOrDefault("fov", 90);
         float[] xy = computeBracketPos(fov);
-        String[] chars = {"┏", "┓", "┗", "┛"};
+        String[] chars = { "┏", "┓", "┗", "┛" };
         float[][] positions = {
-                {-xy[0],  xy[1]},
-                { xy[0],  xy[1]},
-                {-xy[0], -xy[1]},
-                { xy[0], -xy[1]}
+                { -xy[0], xy[1] },
+                { xy[0], xy[1] },
+                { -xy[0], -xy[1] },
+                { xy[0], -xy[1] }
         };
 
         TextColor orange = TextColor.fromHexString("#FFAA00");
@@ -334,14 +365,15 @@ public final class MenuSession {
     }
 
     private void updateFovBrackets() {
-        if (fovBrackets.size() != 4) return;
+        if (fovBrackets.size() != 4)
+            return;
         int fov = playerSettings.getOrDefault("fov", 90);
         float[] xy = computeBracketPos(fov);
         float[][] positions = {
-                {-xy[0],  xy[1]},
-                { xy[0],  xy[1]},
-                {-xy[0], -xy[1]},
-                { xy[0], -xy[1]}
+                { -xy[0], xy[1] },
+                { xy[0], xy[1] },
+                { -xy[0], -xy[1] },
+                { xy[0], -xy[1] }
         };
         for (int i = 0; i < 4; i++) {
             TextDisplay td = fovBrackets.get(i);
@@ -357,7 +389,7 @@ public final class MenuSession {
         double vertHalfRad = Math.toRadians(fov / 2.0);
         double sy = distance * Math.tan(vertHalfRad);
         double sx = sy * ASPECT;
-        return new float[]{(float) sx, (float) sy};
+        return new float[] { (float) sx, (float) sy };
     }
 
     private float fovScale() {
@@ -379,7 +411,8 @@ public final class MenuSession {
     }
 
     private void updateFovDisplay() {
-        if (fovValueDisplay == null || fovValueDisplay.isDead()) return;
+        if (fovValueDisplay == null || fovValueDisplay.isDead())
+            return;
         int fov = playerSettings.getOrDefault("fov", 90);
         fovValueDisplay.text(Component.text(String.valueOf(fov))
                 .color(TextColor.fromHexString("#FFAA00"))
@@ -410,7 +443,8 @@ public final class MenuSession {
                         || "c".equals(f.getName()) && typeName.contains("Listener")) {
                     f.setAccessible(true);
                     Object value = f.get(handle);
-                    if (value != null) return value;
+                    if (value != null)
+                        return value;
                 }
             }
             cls = cls.getSuperclass();
@@ -422,31 +456,37 @@ public final class MenuSession {
         try {
             java.lang.reflect.Field f = typeClass.getField("CHANGE_GAME_MODE");
             return f.get(null);
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         try {
             for (java.lang.reflect.Field f : typeClass.getDeclaredFields()) {
                 String n = f.getName().toUpperCase();
                 if (n.contains("GAME_MODE") || n.contains("GAMEMODE")) {
                     f.setAccessible(true);
                     Object v = f.get(null);
-                    if (v != null) return v;
+                    if (v != null)
+                        return v;
                 }
             }
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         try {
             java.lang.reflect.Constructor<?> ctor = typeClass.getDeclaredConstructor(int.class);
             ctor.setAccessible(true);
             return ctor.newInstance(3);
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         try {
             java.lang.reflect.Field idMapField = typeClass.getDeclaredField("BY_ID");
             idMapField.setAccessible(true);
             Object map = idMapField.get(null);
             if (map instanceof Object[]) {
                 Object[] arr = (Object[]) map;
-                if (arr.length > 3) return arr[3];
+                if (arr.length > 3)
+                    return arr[3];
             }
-        } catch (Throwable ignored) {}
+        } catch (Throwable ignored) {
+        }
         return null;
     }
 
@@ -457,7 +497,8 @@ public final class MenuSession {
             if (conn == null) {
                 if (!hudReflectionLogged) {
                     hudReflectionLogged = true;
-                    plugin.getLogger().warning("[OrjusMenu] HUD: connection field not found on " + handle.getClass().getName());
+                    plugin.getLogger()
+                            .warning("[OrjusMenu] HUD: connection field not found on " + handle.getClass().getName());
                 }
                 return;
             }
@@ -468,11 +509,13 @@ public final class MenuSession {
             if (reason == null) {
                 if (!hudReflectionLogged) {
                     hudReflectionLogged = true;
-                    StringBuilder sb = new StringBuilder("[OrjusMenu] HUD: CHANGE_GAME_MODE field not found. Available static fields of ");
+                    StringBuilder sb = new StringBuilder(
+                            "[OrjusMenu] HUD: CHANGE_GAME_MODE field not found. Available static fields of ");
                     sb.append(typeClass.getName()).append(":");
                     for (java.lang.reflect.Field f : typeClass.getDeclaredFields()) {
                         if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
-                            sb.append(" ").append(f.getName()).append("(").append(f.getType().getSimpleName()).append(")");
+                            sb.append(" ").append(f.getName()).append("(").append(f.getType().getSimpleName())
+                                    .append(")");
                         }
                     }
                     plugin.getLogger().warning(sb.toString());
@@ -501,7 +544,8 @@ public final class MenuSession {
             if (sendMethod == null) {
                 if (!hudReflectionLogged) {
                     hudReflectionLogged = true;
-                    plugin.getLogger().warning("[OrjusMenu] HUD: send method not found on " + conn.getClass().getName());
+                    plugin.getLogger()
+                            .warning("[OrjusMenu] HUD: send method not found on " + conn.getClass().getName());
                 }
                 return;
             }
@@ -509,7 +553,8 @@ public final class MenuSession {
         } catch (Throwable t) {
             if (!hudReflectionLogged) {
                 hudReflectionLogged = true;
-                plugin.getLogger().warning("[OrjusMenu] HUD-hide failed: " + t.getClass().getSimpleName() + " " + t.getMessage());
+                plugin.getLogger()
+                        .warning("[OrjusMenu] HUD-hide failed: " + t.getClass().getSimpleName() + " " + t.getMessage());
             }
         }
     }
@@ -538,48 +583,62 @@ public final class MenuSession {
                 cfg.getInt("cursor.item.custom-model-data", 0));
 
         if (customItem != null) {
-            ItemDisplay disp = (ItemDisplay) loc.getWorld().spawnEntity(loc, EntityType.ITEM_DISPLAY);
+            cursor = getCursor(loc, customItem);
+        } else {
+            String txt = cfg.getString("cursor.text", "✚");
+            Component textComponent = Component.text(txt).color(NamedTextColor.WHITE).decorate(TextDecoration.BOLD);
+            cursor = getCursor(loc, textComponent);
+        }
+    }
+
+    private ItemDisplay getCursor(Location location, ItemStack itemStack) {
+        return location.getWorld().spawn(location, ItemDisplay.class, disp -> {
             disp.setBillboard(Display.Billboard.CENTER);
             disp.setPersistent(false);
             disp.setInvulnerable(true);
-            disp.setItemStack(customItem);
-            disp.setViewRange(2.0f);
-            try { disp.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GUI); } catch (Throwable ignored) {}
-            try { disp.setTeleportDuration(2); } catch (Throwable ignored) {}
-            try { disp.setBrightness(new Display.Brightness(15, 15)); } catch (Throwable ignored) {}
+            disp.setItemStack(itemStack);
+            disp.setViewRange(2f);
+            disp.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GUI);
+            disp.setTeleportDuration(2);
+            disp.setBrightness(new Display.Brightness(15, 15));
+
             Transformation t = disp.getTransformation();
             disp.setTransformation(new Transformation(
                     new Vector3f(cursorScale * 0.5f, -cursorScale * 0.5f, 0f),
                     t.getLeftRotation(),
                     new Vector3f(cursorScale, cursorScale, cursorScale),
                     t.getRightRotation()));
-            cursor = disp;
-        } else {
-            TextDisplay td = (TextDisplay) loc.getWorld().spawnEntity(loc, EntityType.TEXT_DISPLAY);
+        });
+    }
+
+    private TextDisplay getCursor(Location location, Component text) {
+        return location.getWorld().spawn(location, TextDisplay.class, td -> {
             td.setBillboard(Display.Billboard.CENTER);
             td.setSeeThrough(true);
             td.setShadowed(false);
             td.setPersistent(false);
             td.setInvulnerable(true);
-            String txt = cfg.getString("cursor.text", "✚");
-            td.text(Component.text(txt).color(NamedTextColor.WHITE).decorate(TextDecoration.BOLD));
+
             td.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
             td.setViewRange(2.0f);
-            try { td.setTeleportDuration(2); } catch (Throwable ignored) {}
+            try {
+                td.setTeleportDuration(2);
+            } catch (Throwable ignored) {
+            }
             Transformation t = td.getTransformation();
             td.setTransformation(new Transformation(
                     new Vector3f(0f, 0f, 0f),
                     t.getLeftRotation(),
                     new Vector3f(cursorScale, cursorScale, 1f),
                     t.getRightRotation()));
-            cursor = td;
-        }
+        });
     }
 
     private ItemStack resolveCustomItem(String iaId, String material, int customModelData) {
         if (iaId != null && !iaId.isEmpty()) {
             ItemStack ia = tryItemsAdderItem(iaId);
-            if (ia != null) return ia;
+            if (ia != null)
+                return ia;
         }
         if (material != null && !material.isEmpty()) {
             try {
@@ -604,7 +663,8 @@ public final class MenuSession {
         try {
             Class<?> stackClass = Class.forName("dev.lone.itemsadder.api.CustomStack");
             Object stack = stackClass.getMethod("getInstance", String.class).invoke(null, iaId);
-            if (stack == null) return null;
+            if (stack == null)
+                return null;
             return (ItemStack) stackClass.getMethod("getItemStack").invoke(stack);
         } catch (ClassNotFoundException e) {
             plugin.getLogger().warning("[OrjusMenu] cursor.ia-id set but ItemsAdder is not loaded");
@@ -622,9 +682,12 @@ public final class MenuSession {
     }
 
     public void tick() {
-        if (!player.isOnline()) return;
-        if (cursor == null || cursor.isDead()) return;
-        if (cameraEntity == null || cameraEntity.isDead()) return;
+        if (!player.isOnline())
+            return;
+        if (cursor == null || cursor.isDead())
+            return;
+        if (cameraEntity == null || cameraEntity.isDead())
+            return;
 
         cameraEntity.setRotation(anchorYaw, anchorPitch);
 
@@ -650,8 +713,10 @@ public final class MenuSession {
             rotInitialized = true;
         } else {
             float dYaw = rawYaw - lastRawYaw;
-            if (dYaw > 180f) dYaw -= 360f;
-            else if (dYaw < -180f) dYaw += 360f;
+            if (dYaw > 180f)
+                dYaw -= 360f;
+            else if (dYaw < -180f)
+                dYaw += 360f;
             logicalYaw += dYaw;
             lastRawYaw = rawYaw;
 
@@ -681,10 +746,14 @@ public final class MenuSession {
         float screenX = (deltaFromAnchor / yawDegPerEdge) * halfW;
         float screenY = -(pitchDelta / pitchDegPerEdge) * halfH;
 
-        if (screenX > halfW) screenX = halfW;
-        if (screenX < -halfW) screenX = -halfW;
-        if (screenY > halfH) screenY = halfH;
-        if (screenY < -halfH) screenY = -halfH;
+        if (screenX > halfW)
+            screenX = halfW;
+        if (screenX < -halfW)
+            screenX = -halfW;
+        if (screenY > halfH)
+            screenY = halfH;
+        if (screenY < -halfH)
+            screenY = -halfH;
 
         float visualX = screenX;
         float visualY = screenY + CURSOR_Y_OFFSET;
@@ -703,13 +772,15 @@ public final class MenuSession {
         }
     }
 
-    @SuppressWarnings({"rawtypes"})
+    @SuppressWarnings({ "rawtypes" })
     private void spawnButtons() {
         List<?> list = plugin.getConfig().getList("buttons");
-        if (list == null) return;
+        if (list == null)
+            return;
         float s = fovScale();
         for (Object o : list) {
-            if (!(o instanceof Map)) continue;
+            if (!(o instanceof Map))
+                continue;
             Map map = (Map) o;
             String id = stringOf(map.get("id"), "btn");
             String text = stringOf(map.get("text"), id);
@@ -737,17 +808,24 @@ public final class MenuSession {
     }
 
     private static float numberOf(Object o, float def) {
-        if (o instanceof Number n) return n.floatValue();
+        if (o instanceof Number n)
+            return n.floatValue();
         if (o instanceof String s) {
-            try { return Float.parseFloat(s); } catch (NumberFormatException ignored) { return def; }
+            try {
+                return Float.parseFloat(s);
+            } catch (NumberFormatException ignored) {
+                return def;
+            }
         }
         return def;
     }
 
     private static TextColor parseColor(String hex, TextColor fallback) {
         try {
-            if (hex == null) return fallback;
-            if (hex.startsWith("#")) return TextColor.fromHexString(hex);
+            if (hex == null)
+                return fallback;
+            if (hex.startsWith("#"))
+                return TextColor.fromHexString(hex);
             return fallback;
         } catch (Throwable t) {
             return fallback;
@@ -757,10 +835,14 @@ public final class MenuSession {
     private void updateHover(float sx, float sy) {
         MenuButton newHover = null;
         for (MenuButton b : buttons) {
-            if (b.contains(sx, sy)) { newHover = b; break; }
+            if (b.contains(sx, sy)) {
+                newHover = b;
+                break;
+            }
         }
         if (newHover != currentHover) {
-            if (currentHover != null) currentHover.setHovered(false);
+            if (currentHover != null)
+                currentHover.setHovered(false);
             if (newHover != null) {
                 newHover.setHovered(true);
                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.3f, 1.8f);
@@ -770,10 +852,12 @@ public final class MenuSession {
     }
 
     public void handleClick() {
-        if (currentHover == null) return;
+        if (currentHover == null)
+            return;
         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
         String action = currentHover.command;
-        if (action == null || action.isEmpty()) return;
+        if (action == null || action.isEmpty())
+            return;
 
         if (action.startsWith("open:")) {
             String target = action.substring(5).trim();
@@ -803,10 +887,10 @@ public final class MenuSession {
         }
 
         String cmd = action;
-        if (action.startsWith("command:")) cmd = action.substring(8).trim();
+        if (action.startsWith("command:"))
+            cmd = action.substring(8).trim();
         final String finalCmd = cmd.replace("%player%", player.getName());
-        Bukkit.getScheduler().runTask(plugin, () ->
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCmd));
+        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), finalCmd));
     }
 
     public String getCurrentScreen() {
@@ -828,8 +912,7 @@ public final class MenuSession {
         Vector dir = new Vector(
                 -Math.sin(yawRad) * Math.cos(pitchRad),
                 -Math.sin(pitchRad),
-                Math.cos(yawRad) * Math.cos(pitchRad)
-        ).normalize();
+                Math.cos(yawRad) * Math.cos(pitchRad)).normalize();
 
         Vector right = new Vector(-dir.getZ(), 0, dir.getX()).normalize();
         Vector up = right.clone().getCrossProduct(dir).normalize();
