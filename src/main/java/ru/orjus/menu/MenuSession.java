@@ -598,7 +598,7 @@ public final class MenuSession {
             disp.setInvulnerable(true);
             disp.setItemStack(itemStack);
             disp.setViewRange(2f);
-            disp.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GUI);
+            // disp.setItemDisplayTransform(ItemDisplay.ItemDisplayTransform.GUI);
             disp.setTeleportDuration(2);
             disp.setBrightness(new Display.Brightness(15, 15));
 
@@ -606,7 +606,7 @@ public final class MenuSession {
             disp.setTransformation(new Transformation(
                     new Vector3f(cursorScale * 0.5f, -cursorScale * 0.5f, 0f),
                     t.getLeftRotation(),
-                    new Vector3f(cursorScale, cursorScale, cursorScale),
+                    new Vector3f(-cursorScale, cursorScale, cursorScale),
                     t.getRightRotation()));
         });
     }

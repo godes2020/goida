@@ -6,7 +6,8 @@ authors: [ChatGPT, Gemini, DeepSeek]
 description: Cutscene-style join menu with locked camera and mouse cursor (1.21.8)
 load: POSTWORLD
 folia-supported: false
-depend: [ProtocolLib, ItemsAdder]
+depend: [ProtocolLib]
+softdepend: [ItemsAdder]
 commands:
   menu:
     description: Toggle menu manually
